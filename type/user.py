@@ -25,8 +25,7 @@ class Query:
 
     @strawberry.field
     def users(self) -> typing.List[User]:
-        with conn.cursor() as cursor:
-            return cursor.execute(user.select()).fetchall()
+        return conn.execute(user.select()).fetchall()
 
     @strawberry.field
     def user_by_email(self, email: str) -> User:
@@ -35,6 +34,10 @@ class Query:
     @strawberry.field
     def user_by_name(self, name: str) -> User:
         return conn.execute(user.select().where(user.c.name == name)).fetchone()
+
+    @strawberry.field
+    def user_by_email_name(self, email: str, name: str) -> User:
+        return conn.execute(user.select().where(user.c.email == email and user.c.name == name)).fetchone()
 
 
 @strawberry.type
@@ -54,6 +57,21 @@ class Mutation:
     @strawberry.field
     def delete_user(self, id: int) -> str:
         conn.execute(user.delete().where(user.c.id == id))
+        return "success"
+
+    @strawberry.field
+    def delete_users(self) -> str:
+        conn.execute(user.delete())
+        return "success"
+
+    @strawberry.field
+    def delete_user_by_email(self, email: str) -> str:
+        conn.execute(user.delete().where(user.c.email == email))
+        return "success"
+
+    @strawberry.field
+    def delete_user_by_name(self, name: str) -> str:
+        conn.execute(user.delete().where(user.c.name == name))
         return "success"
 
 
