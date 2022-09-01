@@ -1,8 +1,12 @@
 import typing
-
+from data_cipher import Encoder
 import strawberry
 from DB_conn.db import conn
 from models.index import user
+from config import key
+
+
+encoder = Encoder()
 
 
 @strawberry.type
@@ -37,12 +41,14 @@ class Query:
 class Mutation:
     @strawberry.mutation
     def create_user(self, name: str, email: str, password: str) -> str:
-        conn.execute(user.insert().values(name=name, email=email, password=password))
+        conn.execute(user.insert().values(
+            name=name, email=email, password=str(encoder.aes_encrypt(password, key))))
         return "success"
 
     @strawberry.mutation
     def update_user(self, id: int, name: str, email: str, password: str) -> str:
-        conn.execute(user.update().where(user.c.id == id).values(name=name, email=email, password=password))
+        conn.execute(user.update().where(user.c.id == id).values(
+            name=name, email=email, password=str(encoder.aes_encrypt(password, key))))
         return "success"
 
     @strawberry.field
